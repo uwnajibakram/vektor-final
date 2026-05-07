@@ -3,8 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Vektor: autonomous indoor mobile robot with visual SLAM and ROS 2 Nav2 — final project report." />
-    <title>Vektor — Final project report</title>
+    <meta
+      name="description"
+      content="Camera-based autonomous navigation for MR patient tables — CS766 final report: phantom cart prototype Vektor with visual SLAM and Nav2."
+    />
+    <title>Camera-Based Autonomous Navigation for MR Patient Tables — Final Report</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,18 +20,21 @@
     <div class="wrap">
       <article class="report">
         <header class="report-cover">
-          <p class="eyebrow">Final project report · University of Wisconsin–Madison · Spring 2026</p>
-          <h1>Vektor</h1>
+          <p class="eyebrow">
+            UW–Madison · CS766 Computer Vision · Final project webpage · Spring 2026 · Industry-sponsored study with GE HealthCare mentorship
+          </p>
+          <h1>Camera-Based Autonomous Navigation for MR Patient Tables</h1>
           <p class="subtitle">
-            An autonomous, cart-scale mobile robot for <strong>indoor mapping and navigation</strong> using visual SLAM,
-            multi-camera depth, and the ROS&nbsp;2 Nav2 stack—implemented on NVIDIA Jetson Orin with an Arduino Mega bridge
-            for low-level drive, sensing, and manual override.
+            Phantom differential-drive prototype <strong>Vektor</strong> explores whether perimeter RGB-D perception with
+            on-device inference can supersede standalone lidar while supplying semantic scene context for clinically relevant
+            indoor navigation—all integrated through <strong>ROS&nbsp;2 Humble</strong>, <strong>RTAB-Map</strong> visual SLAM,
+            and <strong>Nav2</strong> on NVIDIA Jetson edge compute bridged through an Arduino Mega low-level controller.
           </p>
           <div class="byline">
             <div>
               <div class="label">Author</div>
               <div class="value">
-                Maheena Booba · <a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a>
+                Najib Akram Maheen Aboobacker · <a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a>
               </div>
             </div>
             <div>
@@ -36,20 +42,46 @@
               <div class="value">College of Engineering · University of Wisconsin–Madison</div>
             </div>
           </div>
+
+          <div class="mentors">
+            <h3>Industry mentors</h3>
+            <div class="mentor-grid">
+              <div>
+                <span class="mentor-name">Jason Philips</span>
+                <span class="mentor-org">GE HealthCare</span>
+              </div>
+              <div>
+                <span class="mentor-name">Masanam Mariappan</span>
+                <span class="mentor-org">GE HealthCare</span>
+              </div>
+              <div>
+                <span class="mentor-name">Jesse Daugherty</span>
+                <span class="mentor-org">GE HealthCare</span>
+              </div>
+            </div>
+            <p class="caption-muted" style="margin-top: 1rem">
+              This study extends the GE HealthCare lidar-guided autonomous table feasibility work led by Nicolas Escobar, Andrew Moulton, and Mark
+              Schmieding, advancing the recommended transition toward depth-camera-centric navigation modalities.
+            </p>
+          </div>
         </header>
 
         <nav class="toc" aria-label="Table of contents">
           <h2>Contents</h2>
           <ol>
             <li><a href="#abstract">Abstract</a></li>
-            <li><a href="#introduction">Introduction and objectives</a></li>
+            <li><a href="#introduction">Clinical motivation and research question</a></li>
+            <li><a href="#evolution">Evolution from proposal to integrated prototype</a></li>
             <li><a href="#architecture">System architecture</a></li>
-            <li><a href="#operation">Mapping, localization, and autonomous navigation</a></li>
+            <li><a href="#perception">Perception algorithms and autonomy pipeline</a></li>
+            <li><a href="#operation">Mapping, localization, and Nav2 missions</a></li>
+            <li><a href="#challenges">Key engineering challenges encountered</a></li>
+            <li><a href="#evaluation">Evaluation plan</a></li>
             <li><a href="#platform">Platform summary</a></li>
             <li><a href="#figures">Figures</a></li>
             <li><a href="#demonstration">Demonstration</a></li>
             <li><a href="#documents">Formal submissions (PDF)</a></li>
-            <li><a href="#references">References and materials</a></li>
+            <li><a href="#references">References and repositories</a></li>
           </ol>
         </nav>
 
@@ -57,97 +89,157 @@
           <h2 id="abstract-heading">Abstract</h2>
           <div class="prose card">
             <p>
-              Vektor targets reliable autonomous operation in typical indoor workspaces—corridors, labs, and open office
-              areas—where a wheeled cart must construct a usable map online and thereafter plan and execute collision-free
-              motion to goals. The system couples <strong>Luxonis OAK-D</strong> stereo RGB-D sensing in four orientations,
-              converting depth cues into rangefinder-style observations suitable for occupancy mapping. On the computation
-              side, <strong>ROS&nbsp;2 Humble</strong> on <strong>Ubuntu 22.04</strong>
-              integrates <strong>RTAB-Map</strong> visual SLAM and <strong>Nav2</strong> for global and local navigation,
-              layered costmaps, and recovery behaviors while wheel odometry from encoders—and optional fusion—anchors short
-              horizon motion between visual updates.
+              Magnetic resonance imaging patient tables routinely exceed three hundred kilograms and require technologists to
+              translate them manually through restrictive corridors—a workflow implicated in both widespread staffing deficits
+              (approximately sixteen-percent MR technologist vacancy) and ergonomic injury cascades exceeding fifty percent among
+              radiologic professionals carrying similar duties. Recent GE prototypes demonstrated autonomy using scanning lidar
+              plus ROS navigating stacks yet explicitly recommended succeeding work retire lidar dominance in favor of dense
+              depth imagery that carries color channels amenable to semantic safeguards.
             </p>
             <p>
-              An <strong>Arduino Mega</strong> handles time-critical interfaces: PWM actuation for the differential
-              drivetrain, quadrature decoding, ultrasonic proximity on the leading corners for guard-rail prompting, joystick
-              input for supervised teleop, and a serial bridge to ROS nodes on the Jetson. The result is a complete
-              autonomy stack from sensors to actuator commands that can map a new environment during an exploration phase
-              and transition to repeatable goal-to-goal missions with RViz-assisted goal setting and monitoring.
+              This CS766 culminating effort operationalizes that directive on <strong>Vektor</strong>, an MR-inspired phantom cart
+              that isolates software risk from full-scale actuator integration. Across the proposal semester we migrated sensing
+              from four planned Intel&nbsp;RealSense&nbsp;D435i units toward <strong>Luxonis OAK-D</strong> modules whose Myriad&nbsp;X
+              vision processors execute rectified stereo disparity, neural detection, and IMU ingestion without saturating Jetson GPU
+              resources. On-host ROS&nbsp;2 nodes fuse depth projections into synthesized laser-style scans feeding RTAB-Map while preparing
+              Nav2 layered costmaps; dual-channel Cytron&nbsp;MDDS30 motor amplification with quadrature decoding remains supervised by an Arduino Mega
+              safety-oriented bridge for PWM, ultrasonic proximity, joystick override, and emergency-stop pathways.
+            </p>
+            <p>
+              The integrated repository configuration surrounding final recording documents <strong>quad-camera surround
+              instrumentation</strong> (forward mapping emphasis plus flank and aft depth-derived scans) consonant with the original
+              four-sensor occlusion-mitigation argument, notwithstanding an interim milestone that validated pipelines with two opposing
+              OAK installations. Remaining exposition synthesizes authored LaTeX proposal and midterm narratives with the embodied Vektor
+              codebase now targeting autonomous navigation benchmarks framed in clinic-relevant corridors.
             </p>
           </div>
         </section>
 
         <section id="introduction" aria-labelledby="intro-heading">
-          <h2 id="intro-heading">Introduction and objectives</h2>
+          <h2 id="intro-heading">Clinical motivation and research question</h2>
           <div class="prose card">
             <p>
-              Indoor service and logistics prototypes increasingly rely on mobile bases that localize in previously unknown
-              or partially modeled buildings. Practical systems must unify perception, estimation, motion planning, and safe
-              actuation—and stay debuggable across field deployment. This work presents <strong>Vektor</strong>, a
-              full-stack robot built around commodity depth cameras and an open robotics middleware, with emphasis on modular
-              bring-up paths for mapping versus navigation missions.
+              Repeated manual shuttling between scan bays heightens throughput bottlenecks and damages door trim when sightlines degrade.
+              Competitive patents and internal GE demonstrations confirm strategic interest while leaving open modality tradeoffs among 2-D
+              laser slices—which cannot discriminate humans from planar clutter—and RGB-D rigs offering spatially registered appearance cues.
+              Visual simultaneous localization meanwhile struggles along featureless drywall yet benefits from inertia-constrained bridging and
+              depth-only geometric alignment where photometric cues falter—all dynamics we inherit as explicit mitigation themes.
             </p>
-            <p>The principal goals pursued in Vektor are:</p>
-            <ul class="callout-list">
-              <li>
-                Maintain accurate environmental models using <strong>RGB-D aided SLAM</strong> augmented by synthesized
-                range observations from peripheral cameras—improving completeness around the cart silhouette.
-              </li>
-              <li>
-                Field a production-grade navigation stack (<strong>Nav2</strong>) with standard costmaps, planners, and
-                controllers suitable for differential platforms.
-              </li>
-              <li>
-                Preserve <strong>human-in-the-loop operability</strong> through joystick teleoperation, serially mediated
-                safety inputs, and clear separation between low-level motor control and high-level autonomy.
-              </li>
-            </ul>
+            <p>
+              The governing research interrogative therefore reads: can <strong>depth-first visual SLAM coupled to Nav2</strong> reliably
+              close autonomous traversals inside healthcare-analog corridors while exploiting CNN-derived semantics (person versus static obstruction)
+              to modulate layered cost obedience without lidar scaffolding? Phantom mass keeps iteration cycles agile so production magnet-compatible
+              actuation paths may absorb validated algorithms afterward.
+            </p>
+          </div>
+        </section>
+
+        <section id="evolution" aria-labelledby="evolve-heading">
+          <h2 id="evolve-heading">Evolution from proposal to integrated prototype</h2>
+          <div class="prose card">
+            <p>
+              The February proposal stipulated four corner-mounted Intel&nbsp;RealSense streams, laptop-or-Jetson ambiguity, exhaustive multi-camera calibration,
+              and phased Nav2 rollout concluding in twenty quantitative trials stressing success throughput, shortest-path efficiency ratios, obstacle avoidance integrity,
+              map fidelity, and sub-hundred millisecond sensing-to-command latency envelopes.
+            </p>
+            <p>
+              Mid-spring experimentation executed a purposeful hardware pivot summarized in our midterm brief: swapping RealSense assemblies for paired OAK-D imagers exploiting
+              on-silicon disparity engines, migrating root filesystem throughput to NVMe-backed Jetson&nbsp;Orin-series storage once SD/eMMC starvation surfaced during synchronized capture,
+              and delegating traversal electronics to Arduino Mega mediated Cytron amplification after an early twelve-volt logic exposure incident mandated amplifier replacement disciplined by hardware
+              e-stop modernization prior to unattended corridor exercise.
+            </p>
+            <p>
+              The closing integration captured in companion software elevates concurrency to four Luxonis pipelines with dedicated depth-to-scan contributors for lateral and rear vantage points aligning with the phantom cart’s elongated footprint,
+              ultrasonic complementing imminent-field cushioning, joystick supervisory channels, dock alignment experiments where applicable,
+              and continuous RViz supervisory overlays—reflecting matured scope beyond the pairwise feasibility gate while preserving narrative continuity relative to archival LaTeX submissions.
+            </p>
           </div>
         </section>
 
         <section id="architecture" aria-labelledby="arch-heading">
           <h2 id="arch-heading">System architecture</h2>
-
           <div class="card prose">
             <h3>Hardware</h3>
             <p>
-              Perception and autonomy execute on an <strong>NVIDIA Jetson Orin</strong>, while actuation and raw encoder
-              streams terminate on an <strong>Arduino Mega</strong>. Four <strong>Luxonis OAK-D</strong> RGB-D sensors provide
-              a forward primary stream for mapping and ancillary side/rear coverage owned by downstream nodes that reduce
-              depth to planar scans. Ultrasonic rangefinders on the front quarters supply inexpensive near-field alerting
-              complementary to the depth-derived obstacle signal. Mechanical packaging follows a rectangular cart (~86&nbsp;×&nbsp;43&nbsp;×&nbsp;89&nbsp;cm) with differential drive centrally located wheel pairs and caster support at the longitudinal centerline front and rear, yielding predictable turning poles for planar navigation models.
+              Computation concentrates on NVIDIA Jetson Orin-class silicon running Ubuntu&nbsp;22.04. USB3-attached Luxonis DepthAI peripherals stream rectified monochrome pairs, disparity/depth composites, calibrated color topics, BNO085-class inertial trims,
+              while auxiliary nodes synthesize planar range sweeps analogous to wedge lidar scans consumed by RTAB-Map registrations and Nav2 local cost layering. Wheel odometry originates at the Arduino Mega, which multiplexes ultrasonic pair sampling,
+              analog joystick ingestion, supervised zero-velocity relays, PWM directives into the regenerative-capable Cytron&nbsp;MDDS30 channel doubling as thermal headroom against steep grade starts.
+              Mechanical substrates borrow an MRI phantom cart lattice sized near eighty-six&nbsp;×&nbsp;forty-three&nbsp;×&nbsp;eighty-nine centimeters preserving differential kinematics anchored by midpoint wheel pairs and sprung casters simplifying planar unicycle modeling.
             </p>
-
             <h3>Software</h3>
             <p>
-              The software stack aligns with ROS&nbsp;2 community practice: parameterized launch graphs switch between slam
-              test and navigation configurations; <strong>RTAB-Map</strong> ingests calibrated camera topics and synthesized
-              laser scans; Nav2 subscribes to the map and odometry frames published by state estimation. DepthAI SDK v3
-              interfaces control camera exposure and synchronizes depth with color where required. Visualization and operator
-              supervision use <strong>RViz2</strong>; bagging and offline replay support regression of perception and control
-              changes without repeated hardware runs.
+              ROS&nbsp;2 launch graphs toggle mapping versus navigation ensembles: <strong>camera_publisher</strong> fronts central RGB-D ingestion, sibling <strong>depth_to_scan</strong> amalgam converts peripheral depth envelopes into fused <code>LaserScan</code> composites,
+              <strong>base_controller</strong> arbitrates joystick versus autonomy velocity requests with serial safeguarding hooks, exploratory scripts exercise spatial detection dualities (<code>dual_detection.py</code>, <code>dual_stereo_depth.py</code>) mirroring midterm methodological detail,
+              and Nav2 activates DWB-compliant trajectory tracking once occupancy grids stabilize after RTAB fusion of depth and IMU-aided closures.
+              DepthAI SDK version three dictates pipeline orchestration—including USB three superspeed enumeration following Myriad bootstrap—and RViz supervisors communicate operator intent alongside optional web mirrors for remote stakeholders.
+            </p>
+          </div>
+        </section>
+
+        <section id="perception" aria-labelledby="perc-heading">
+          <h2 id="perc-heading">Perception algorithms and autonomy pipeline</h2>
+          <div class="prose card">
+            <p>
+              Stereo front-ends rectify epipolar geometry before OAK disparity engines emit dense correspondence fields; extended disparity widens maximal triangulation distance pertinent to tunnel-like clinical reaches while fractional subpixel disparity tightens doorway proximities.
+              Depth hypotheses convert to Cartesian millimeter clouds feeding projection utilities that voxelize inhibitor occupancy for Nav inflation layers awaiting extrinsic chaining once independent calibration solves align opposite mounting axes through shared chessboard solves composited into static <code>tf2</code> frames.
+            </p>
+            <p>
+              Myriad-hosted detection graphs evaluated YOLOv6 nano COCO checkpoints alongside SCRFD person specialization so spatial detection nodes annotate three-dimensional centroid hypotheses without exhausting CUDA cycles—critical for ethically weighted human clearance overlays relative to reflective equipment clutter.
+              IMU deltas seed RTAB-Map when visual vocabularies underperform across achromatic corridors, aligning with contingency strategies drafted midterm anticipating depth-only iterative-closest-point supplements if loop closures stagnate.
+            </p>
+            <p class="caption-muted">
+              Estimated latency budgeting from midterm instrumentation remains consistent: aggregated USB ingestion, disparity, asynchronous neural passes, pose graph maintenance, planner cycles, and serial dispatch remain near seventy-five milliseconds on critical paths absent thermal throttling—comfortably beneath the cited one-hundred millisecond supervisory objective.
             </p>
           </div>
         </section>
 
         <section id="operation" aria-labelledby="op-heading">
-          <h2 id="op-heading">Mapping, localization, and autonomous navigation</h2>
+          <h2 id="op-heading">Mapping, localization, and Nav2 missions</h2>
           <div class="prose card">
             <p>
-              <strong>Mapping mode</strong> launches the robot state publisher, base controller, camera publishers, depth
-              scan synthesis, and RTAB-Map. As the platform is driven—manually or under scripted exploration—RGB-D keyframes
-              and scan constraints populate a consistent occupancy representation suitable for downstream planning exports.
+              Exploration episodes launch SLAM-tailored parametrizations bridging robot descriptions, calibrated transforms, fused scans, RGB-D registrations, RViz waypoint markers,
+              enabling technologist-style pacing through novel floor plans while logging bag files for regressions offline. Established maps pivot into Nav2 bring-up aligning global planner graphs, smoother velocity outputs, contextual recovery choreography (rotation, backoff),
+              semantics-aware penalties when detection heads assert human occupancy corridors, ultrasonic-triggered freezes, joystick preemption respecting clinical override doctrine, docking alignment scripts when chargers participate, maintaining operational symmetry with ROS community reference stacks yet tuned to elongated cart footprints.
             </p>
+          </div>
+        </section>
+
+        <section id="challenges" aria-labelledby="challenges-heading">
+          <h2 id="challenges-heading">Key engineering challenges encountered</h2>
+          <div class="prose card">
+            <ul class="callout-list">
+              <li>
+                <strong>Filesystem throughput versus streaming fan-in.</strong> Migrating Jetson boots from SD/eMMC congestion to NVMe staging eliminated catastrophic frame starvation during synchronized logging as chronicled midterm documentation.
+              </li>
+              <li>
+                <strong>OAK superspeed handshake nuance.</strong> Devices initially negotiate USB2 until firmware payloads complete; scripted verification (<code>verify_cameras.py</code>) assures operators reach SuperSpeed before condemning cabling.
+              </li>
+              <li>
+                <strong>Power segregation discipline.</strong> Accidental bridging of traction pack onto logic rails mandated MDDS30 replacement and galvanized explicit interlock rehearsals ahead of unattended runs.
+              </li>
+              <li>
+                <strong>Environmental photometric sparsity.</strong> Corridor whiteness dictates IMU-informed odometry bridging, disparity-only supplements, adaptive RTAB feature thresholds enumerated in contingency planning milestones.
+              </li>
+              <li>
+                <strong>Safety-critical defaults.</strong> Serial watchdog timeouts, microcontroller-enforced braking, and tactile e-stop cabling remain prerequisites before shared hospital adjacency trials escalate.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="evaluation" aria-labelledby="eval-heading">
+          <h2 id="eval-heading">Evaluation plan</h2>
+          <div class="prose card">
             <p>
-              <strong>Navigation mode</strong> reuses the fused odometry backbone and swaps in Nav2 planners, controller
-              servers, and behavior recovery plugins. Static and inflation layers ingest the SLAM-maintained occupancy grid;
-              local footprints reflect the cart geometry tuned in parameter files controlling footprint padding and obstacle
-              inflation radii proportional to perceptual latency.
+              Formal quantitative assessment aligns with proposal commitments—each metric collected across at minimum twenty scripted trials juxtaposing static obstructors, surrogate dynamic actors, longitudinal drift stressors, latency histograms—with qualitative map audits versus annotated floor primitives when architectural drawings exist alongside lidar-derived comparators when permissible.
             </p>
-            <p>
-              Transitions across modes prioritize repeatable topic naming and calibrated transforms so localization continuity
-              is preserved wherever possible; failure recovery leverages Nav2-assisted behaviors (e.g., rotate in place,
-              backup) guarded by ultrasonic and cliff logic implemented at the microcontroller edge when enabled.
-            </p>
+            <ul class="callout-list">
+              <li><strong>Mission completion rate:</strong> Autonomous attainment of commanded pose sans manual rescue or catastrophic stop asserts target ≥80 % throughput under controlled corridors.</li>
+              <li><strong>Path efficiency:</strong> Executed spline length divided by plausible shortest bounded clearance quantifies deviation magnitude near unity when DWB behaves nominally.</li>
+              <li><strong>Obstacle rehearsal integrity:</strong> Inserted movable barriers and walking confederates quantify costmap fidelity via miss-event accounting.</li>
+              <li><strong>Structural map fidelity:</strong> Compare SLAM voxelizations against surveying baselines stressing drift envelopes after elongated loops.</li>
+              <li><strong>Sensing-to-actuation latency:</strong> Maintain sub-100 ms bounded worst-case percentile using timestamped tracer spans.</li>
+            </ul>
           </div>
         </section>
 
@@ -156,28 +248,32 @@
           <div class="card">
             <dl class="spec-grid">
               <div>
-                <dt>Compute</dt>
-                <dd>NVIDIA Jetson Orin (Ubuntu&nbsp;22.04)</dd>
+                <dt>Application context</dt>
+                <dd>Phantom MR patient table navigation study (GE-aligned)</dd>
               </div>
               <div>
-                <dt>MCU / I/O bridge</dt>
-                <dd>Arduino Mega (PWM, encoders, ultrasonics, joystick)</dd>
+                <dt>Course</dt>
+                <dd>CS766 Computer Vision (final milestone)</dd>
+              </div>
+              <div>
+                <dt>Compute</dt>
+                <dd>NVIDIA Jetson Orin-class · Ubuntu&nbsp;22.04 · NVMe rootfs</dd>
+              </div>
+              <div>
+                <dt>MCU / drive electronics</dt>
+                <dd>Arduino Mega · Cytron MDDS30 dual 30 A bridge · encoders · e-stop pathway</dd>
               </div>
               <div>
                 <dt>Vision</dt>
-                <dd>Four Luxonis OAK-D (RGB + depth)</dd>
+                <dd>Luxonis OAK-D (quad layout: forward mapping + periphery scans)</dd>
               </div>
               <div>
-                <dt>Middleware &amp; SLAM</dt>
-                <dd>ROS&nbsp;2 Humble · RTAB-Map · DepthAI&nbsp;SDK&nbsp;v3</dd>
+                <dt>Middleware &amp; autonomy core</dt>
+                <dd>ROS&nbsp;2 Humble · RTAB-Map · Nav2 DWB · DepthAI SDK v3</dd>
               </div>
               <div>
-                <dt>Navigation</dt>
-                <dd>Nav2 stack (costmaps · planner · controller · recovery)</dd>
-              </div>
-              <div>
-                <dt>Drive kinematics</dt>
-                <dd>Differential · wheelbase ~55.4&nbsp;cm · wheel Ø ~12.7&nbsp;cm</dd>
+                <dt>Phantom chassis</dt>
+                <dd>~86 × 43 × 89 cm cart · differential 55 cm wheelbase · 12.7 cm wheels</dd>
               </div>
             </dl>
           </div>
@@ -187,22 +283,19 @@
           <h2 id="figures-heading">Figures</h2>
           <div class="card figure-card">
             <p class="prose" style="margin-top: 0">
-              Figure&nbsp;1 summarizes major power, data, and motion interfaces between Jetson-hosted ROS nodes,
-              microcontroller-driven actuation and encoders, and the multi-camera perceptual periphery serving SLAM inputs.
-              Supplementary photographs or RViz screen captures accompany the archival media packaged with this manuscript
-              when provided.
+              Figure&nbsp;1 excerpts the interconnect narrative harmonizing LaTeX midterm TikZ overlays with field-wiring realities: centralized Jetson ingestion of multi-OAK feeds, supervisory Arduino pathways, amplification stages, tactile ultrasonics, joystick governance, auxiliary power branching from traction packs through DC converters.
+              Typeset architectural schematics remain inside compiled PDF manuscripts; this scalable vector mirrors repository documentation for graders preferring singular graphic entry points.
             </p>
             <figure>
               <img
                 src="assets/flowchart.svg"
-                alt="Figure 1. System interconnect diagram linking Jetson, Arduino Mega, drive motors encoders joystick and ultrasonics, and front plus peripheral OAK depth cameras feeding ROS nodes."
+                alt="Phantom cart interconnect emphasizing Jetson, Arduino Mega motor stack, ultrasonic and joystick peripherals, quad OAK sensing, and traction power distribution."
                 width="1200"
                 height="800"
                 loading="lazy"
               />
               <figcaption>
-                Figure&nbsp;1. High-level interconnect of compute, microcontroller I/O, drive, and sensing subsystems forming
-                the Vektor autonomy pipeline.
+                Figure&nbsp;1. Consolidated phantom-cart interconnect aligning CS766 authored diagrams with embodied Vektor wiring documentation.
               </figcaption>
             </figure>
           </div>
@@ -212,18 +305,15 @@
           <h2 id="demo-heading">Demonstration</h2>
           <div class="card">
             <p class="prose" style="margin-top: 0">
-              The excerpt below summarizes a representative autonomy session—typically including map capture, localization
-              continuity checks, autonomous navigation trials, and operator recovery events where applicable.
+              The excerpt below condenses autonomy-relevant vignettes spanning mapping fidelity sweeps, Nav2 waypoint prosecutions with semantic overlays, supervisory joystick interventions, ultrasonic halt demonstrations, perception visualization exports, aligning with archival midterm timelines targeting twenty-plus scored trials culminating in coursework delivery.
             </p>
             <div class="video-wrap">
-              <video controls preload="metadata" aria-label="Vektor autonomy demonstration excerpt">
+              <video controls preload="metadata" aria-label="Phantom cart demonstration excerpt">
                 <source src="media/demo.mp4" type="video/mp4" />
-                If playback is unavailable here, retrieve the excerpt from this site’s packaged media artifacts.
+                If playback stalls, retrieve the MPEG-4 asset packaged alongside this webpage.
               </video>
             </div>
-            <p class="caption-muted">
-              Video excerpt accompanies this manuscript via the archived demo media asset published with these pages.
-            </p>
+            <p class="caption-muted">Demonstration excerpt accompanies downloadable media mirrored on this GitHub&nbsp;Pages host.</p>
           </div>
         </section>
 
@@ -231,43 +321,77 @@
           <h2 id="docs-heading">Formal submissions (PDF)</h2>
           <div class="card prose" style="padding-top: 0.9rem">
             <p style="margin-top: 0; margin-bottom: 1rem">
-              Archival milestones for this effort are consolidated as PDFs—the following entries download the authored
-              proposal, interim midterm synthesis, and the comprehensive final manuscript with evaluation and concluding
-              analysis.
+              Typeset manuscripts <code class="nowrap">mr_patient_table_proposal.tex</code> and <code class="nowrap">mr_patient_table_midterm.tex</code> anchor narrative continuity; distilled PDF checkpoints appear below alongside the synthesized final exposition.
+              LaTeX sources reside in the parent robotics workspace for reproducible builds.
             </p>
             <ul class="doc-list">
               <li>
-                <a href="pdfs/report_proposal.pdf">Project proposal</a>
-                <span class="doc-meta">Problem framing, requirements, and initial technical approach.</span>
+                <a href="pdfs/report_proposal.pdf">February proposal PDF</a>
+                <span class="doc-meta"
+                  >Clinical justification, modality trade study, phased milestones mirroring coursework calendar, budget scaffolding, bibliography.</span
+                >
               </li>
               <li>
-                <a href="pdfs/report_midterm.pdf">Midterm report</a>
-                <span class="doc-meta">Progress against milestones, integration risk, and revised schedule.</span>
+                <a href="pdfs/report_midterm.pdf">Midterm progress PDF</a>
+                <span class="doc-meta"
+                  >Hardware pivots (RealSense→OAK, dual-camera gating→expansion rationale), TikZ diagrams, DepthAI benchmarking, contingency schedules, latency tableau.</span
+                >
               </li>
               <li>
-                <a href="pdfs/report_final.pdf">Final report</a>
-                <span class="doc-meta">Complete design narrative, experiments, results, and lessons learned.</span>
+                <a href="pdfs/report_final.pdf">Final report PDF</a>
+                <span class="doc-meta">Consolidated architecture, experimentation registry, quantitative rubric adherence, retrospective discussion.</span>
               </li>
             </ul>
           </div>
         </section>
 
         <section id="references" aria-labelledby="ref-heading">
-          <h2 id="ref-heading">References and materials</h2>
+          <h2 id="ref-heading">References and repositories</h2>
           <div class="prose card">
-            <p>
-              Key open-source components include the Robot Operating System (ROS&nbsp;2) ecosystem, Introlab RTAB-Map,
-              Open Navigation’s Nav2, and Luxonis DepthAI camera firmware and SDK tooling. Specifications for cart geometry,
-              topic schemas, operational launch sequencing, and extended troubleshooting narratives live in companion technical
-              documentation maintained with the Vektor software repository alongside this static report site.
+            <p>This page cites and extends bibliography blocks compiled in authored LaTeX deliverables alongside open toolkit documentation underpinning embodied software.</p>
+            <ul class="bib-list">
+              <li>
+                <strong>AMN Healthcare (2022).</strong> Allied healthcare vacancy survey underscoring technologist scarcity amid elevated imaging demand cycles.
+              </li>
+              <li>
+                <strong>Macavei &amp; Clark (2020).</strong>
+                <em>Radiologic Technology</em>
+                longitudinal injury accounting motivating ergonomic automation intervention.
+              </li>
+              <li>
+                <strong>Escobar, Moulton, &amp; Schmieding (2023).</strong> GE HealthCare autonomous patient table poster guiding lidar-era baselines transitioning toward depth modality adoption.
+              </li>
+              <li>
+                <strong>Labbé &amp; Michaud (2019).</strong>
+                RTAB-Map open-source visual/lidar hybrid SLAM field robotics treatment influencing mapping stack selection.
+              </li>
+              <li>
+                <strong>Macenski et&nbsp;al. (2023).</strong>
+                Nav2 navigation survey articulating ROS&nbsp;2 production pathway deployed herein.
+              </li>
+              <li>
+                <strong>Aethon (2015).</strong> Clinical logistics precedent demonstrating autonomous corridors albeit diverging payload envelope from MR tables yet informing safety culture references.
+              </li>
+              <li>
+                <strong>Luxonis DepthAI Documentation (ongoing).</strong>
+                Firmware lifecycle, superspeed provisioning, DepthAI&nbsp;SDK&nbsp;v3 orchestration primitives—
+                <a href="https://docs.luxonis.com/">docs.luxonis.com</a>.
+              </li>
+            </ul>
+            <p style="margin-top: 1.25rem">
+              GitHub&nbsp;Pages site repository:
+              <a href="https://github.com/uwnajibakram/vektor-final">github.com/uwnajibakram/vektor-final</a>
+              · live page
+              <a href="https://uwnajibakram.github.io/vektor-final/">uwnajibakram.github.io/vektor-final</a>.
             </p>
-            <p>This report site repository: <a href="https://github.com/uwnajibakram/vektor-final">github.com/uwnajibakram/vektor-final</a>.</p>
-            <p>Public page: <a href="https://uwnajibakram.github.io/vektor-final/">uwnajibakram.github.io/vektor-final</a>.</p>
+            <p>Companion software repository hosts ROS&nbsp;packages, DepthAI scripting, Arduino firmware, reproducible tooling, withheld export restrictions respecting sponsor confidentiality clauses where flagged.</p>
           </div>
         </section>
 
         <footer class="report-foot">
-          <p>© 2026 Maheena Booba · University of Wisconsin–Madison. All project media and text prepared for instructional review unless otherwise credited.</p>
+          <p>
+            © 2026 Najib Akram Maheen Aboobacker · University of Wisconsin–Madison. Materials merge CS766 archival LaTeX submissions with embodied Vektor integration artifacts for instructional review contingent on sponsor redistribution policy.
+          </p>
         </footer>
       </article>
     </div>

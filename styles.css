@@ -112,6 +112,40 @@ h1 {
   margin-bottom: 0;
 }
 
+.mentors {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.mentors h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mentor-grid {
+  display: grid;
+  gap: 0.85rem 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  font-size: 0.95rem;
+}
+
+.mentor-name {
+  font-weight: 650;
+}
+
+.mentor-org,
+.mentor-email {
+  display: block;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 450;
+}
+
 .toc {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -273,6 +307,24 @@ section h3 {
   font-weight: 450;
 }
 
+.bib-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.bib-list li {
+  margin: 0.85rem 0;
+  padding-left: 0;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.bib-list li strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .figure-card figure {
   margin: 1rem 0 0;
 }
@@ -314,6 +366,18 @@ figcaption {
   font-size: 0.92rem;
   color: var(--muted);
   margin: 0.75rem 0 0;
+}
+
+code {
+  font-size: 0.88em;
+  background: var(--surface-2);
+  padding: 0.12em 0.38em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+code.nowrap {
+  white-space: nowrap;
 }
 
 footer.report-foot {
