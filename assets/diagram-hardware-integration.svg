@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450">
+  <defs>
+    <marker id="end" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <polygon points="0 0, 7 3.5, 0 7" fill="#334155"/>
+    </marker>
+    <style>
+      .blk { fill: #ffffff; stroke: #334155; stroke-width: 2; }
+      .planned { fill: #f1f5f9; stroke: #64748b; stroke-width: 2; stroke-dasharray: 6 4; }
+      .lbl { font: 600 12px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .sml { font: 500 10px ui-sans-serif, system-ui, sans-serif; fill: #475569; }
+      .title { font: 700 13px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .e { stroke: #334155; stroke-width: 1.85; fill: none; marker-end: url(#end); }
+      .e2 { stroke: #64748b; stroke-width: 1.85; stroke-dasharray: 6 4; fill: none; marker-end: url(#end); }
+      .e-plain { stroke: #334155; stroke-width: 1.85; fill: none; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#fafafa"/>
+
+  <text x="500" y="28" text-anchor="middle" class="title">Figure 1 — Hardware integration (block diagram from midterm report)</text>
+  <text x="500" y="48" text-anchor="middle" class="sml">
+    Dotted cameras: planned at midterm. Current Vektor software also runs four OAK-D units (front / back / sides) for perimeter depth and scan synthesis.
+  </text>
+
+  <!-- Power -->
+  <rect class="blk" x="32" y="100" width="108" height="210" rx="6"/>
+  <text x="86" y="188" text-anchor="middle" class="lbl">24 V battery</text>
+  <text x="86" y="205" text-anchor="middle" class="sml">DC-DC rails</text>
+
+  <!-- Cameras -->
+  <rect class="planned" x="178" y="70" width="128" height="50" rx="5"/>
+  <text x="242" y="92" text-anchor="middle" class="lbl">OAK-D left</text>
+  <text x="242" y="108" text-anchor="middle" class="sml">(planned)</text>
+
+  <rect class="blk" x="336" y="70" width="128" height="50" rx="5"/>
+  <text x="400" y="92" text-anchor="middle" class="lbl">OAK-D front</text>
+
+  <rect class="blk" x="534" y="70" width="128" height="50" rx="5"/>
+  <text x="598" y="92" text-anchor="middle" class="lbl">OAK-D rear</text>
+
+  <rect class="planned" x="732" y="70" width="128" height="50" rx="5"/>
+  <text x="796" y="92" text-anchor="middle" class="lbl">OAK-D right</text>
+  <text x="796" y="108" text-anchor="middle" class="sml">(planned)</text>
+
+  <!-- Jetson -->
+  <rect class="blk" x="372" y="158" width="256" height="72" rx="6"/>
+  <text x="500" y="186" text-anchor="middle" class="lbl">Jetson Orin-class compute</text>
+  <text x="500" y="204" text-anchor="middle" class="sml">ROS 2 · RTAB-Map · Nav2 · DepthAI SDK v3</text>
+  <text x="500" y="220" text-anchor="middle" class="sml">NVMe root recommended for multi-camera I/O</text>
+
+  <!-- Arduino -->
+  <rect class="blk" x="372" y="258" width="256" height="50" rx="6"/>
+  <text x="500" y="280" text-anchor="middle" class="lbl">Arduino Mega 2560</text>
+  <text x="500" y="296" text-anchor="middle" class="sml">USB serial ? Jetson · joystick · ultrasonic</text>
+
+  <!-- MDDS30 -->
+  <rect class="blk" x="372" y="326" width="256" height="42" rx="6"/>
+  <text x="500" y="352" text-anchor="middle" class="lbl">Cytron MDDS30 motor driver</text>
+
+  <!-- Motors & drive -->
+  <rect class="blk" x="178" y="392" width="118" height="40" rx="5"/>
+  <text x="237" y="410" text-anchor="middle" class="lbl">Motor L + encoder</text>
+  <rect class="blk" x="704" y="392" width="118" height="40" rx="5"/>
+  <text x="763" y="410" text-anchor="middle" class="lbl">Motor R + encoder</text>
+  <rect class="blk" x="391" y="392" width="218" height="40" rx="5"/>
+  <text x="500" y="410" text-anchor="middle" class="lbl">Differential base · 2 casters</text>
+
+  <!-- Cam ? Jetson (USB data) -->
+  <path class="e" d="M 400 120 L 400 158"/>
+  <text x="408" y="142" class="sml">USB3 data</text>
+  <path class="e" d="M 598 120 L 598 158"/>
+  <text x="606" y="142" class="sml">USB3 data</text>
+  <path class="e2" d="M 242 120 L 242 138 L 420 138 L 420 158"/>
+  <path class="e2" d="M 796 120 L 796 138 L 580 138 L 580 158"/>
+
+  <!-- Jetson ? Arduino -->
+  <path class="e-plain" d="M 420 248 L 400 230"/>
+  <path class="e-plain" d="M 380 258 L 400 230"/>
+  <polygon points="400,230 393,238 407,238" fill="#334155"/>
+  <text x="295" y="242" class="sml">cmd_vel (ROS ? MCU)</text>
+  <path class="e-plain" d="M 580 230 L 600 248"/>
+  <path class="e-plain" d="M 620 258 L 600 248"/>
+  <polygon points="600,248 593,240 607,240" fill="#334155"/>
+  <text x="628" y="242" class="sml">wheel ticks / status</text>
+
+  <!-- Arduino ? driver ? motors -->
+  <path class="e" d="M 500 308 L 500 326"/>
+  <text x="508" y="320" class="sml">PWM</text>
+  <path class="e" d="M 372 347 L 310 347 L 297 392"/>
+  <path class="e" d="M 628 347 L 703 392"/>
+
+  <!-- Motors ? chassis -->
+  <path class="e-plain" d="M 297 392 L 350 392"/>
+  <path class="e-plain" d="M 391 392 L 704 392"/>
+  <polygon points="350,392 358,387 358,397" fill="#334155"/>
+  <polygon points="704,392 696,387 696,397" fill="#334155"/>
+
+  <!-- Encoder return to Arduino -->
+  <path class="e-plain" stroke-dasharray="5 4" d="M 237 392 L 237 375 L 380 375 L 380 308"/>
+  <path class="e-plain" stroke-dasharray="5 4" d="M 763 392 L 763 375 L 620 375 L 620 308"/>
+  <text x="300" y="368" class="sml">encoder</text>
+  <text x="655" y="368" class="sml">encoder</text>
+
+  <!-- Power distribution -->
+  <path class="e-plain" d="M 140 175 L 372 178"/>
+  <text x="220" y="170" class="sml">5 V</text>
+  <path class="e-plain" d="M 140 210 L 372 283"/>
+  <text x="180" y="230" class="sml">12 V</text>
+  <path class="e-plain" d="M 140 280 L 372 347"/>
+  <text x="195" y="310" class="sml">24 V traction</text>
+</svg>
