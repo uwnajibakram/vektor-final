@@ -2,6 +2,30 @@
 
 Static site for your final course submission. Push this folder to its **own** small GitHub repository (recommended), then turn on **GitHub Pages**.
 
+## One-command publish (recommended)
+
+[`gh`](https://cli.github.com/) is installed on this Mac via Homebrew (`brew install gh` if needed).
+
+1. Authenticate once in Terminal (browser opens):  
+   `gh auth login`
+2. From this folder (`submission-site`), run:
+
+```bash
+./publish-pages.sh
+```
+
+Optional repo name:
+
+```bash
+./publish-pages.sh my-custom-repo-name
+```
+
+The script creates a **public** repo (default name `vektor-final`), pushes `main`, and tries to enable **GitHub Pages** from branch `main` at `/`. If the Pages API step fails (token permissions), use **Settings → Pages** once as described below.
+
+Wait one to two minutes, then open:
+
+`https://<your-github-username>.github.io/<repo>/`
+
 ## Before you publish
 
 1. **Confirm your GitHub username** (not your email). Open [github.com/settings/profile](https://github.com/settings/profile). Your site will be at `https://<username>.github.io/<repo>/`.
