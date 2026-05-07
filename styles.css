@@ -370,6 +370,7 @@ figcaption {
 
 .video-wrap {
   margin-top: 0.85rem;
+  max-width: 100%;
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -379,7 +380,7 @@ figcaption {
 .video-wrap video {
   display: block;
   width: 100%;
-  max-height: min(72vh, 560px);
+  max-height: min(72vh, 600px);
 }
 
 .caption-muted {
@@ -412,16 +413,6 @@ footer.report-foot p {
   margin: 0 0 0.6rem;
 }
 
-.source-note {
-  font-size: 0.88rem;
-  color: var(--muted);
-  margin: 0 0 1.5rem;
-  padding: 0.65rem 0.85rem;
-  background: var(--surface-2);
-  border-radius: var(--radius);
-  border-left: 3px solid var(--accent);
-}
-
 .title-meta {
   margin: 0.15rem 0;
   font-size: 1.02rem;
@@ -438,6 +429,36 @@ footer.report-foot p {
 
 .slide-section.card {
   margin-bottom: 1.75rem;
+  overflow-x: auto;
+}
+
+.logo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem 2rem;
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.logo-banner--footer {
+  border-top: none;
+  padding-top: 0.5rem;
+  margin-top: 1rem;
+}
+
+.logo-banner__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-height: 4.5rem;
+  max-width: min(220px, 46vw);
+  object-fit: contain;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
 .slide-section .slide-subheading {
@@ -520,9 +541,21 @@ footer.report-foot p {
   align-items: start;
 }
 
+.slide-figures > *,
+.slide-figures figure {
+  min-width: 0;
+}
+
 .slide-figures img {
+  display: block;
+  width: auto;
   max-width: 100%;
   height: auto;
+  max-height: min(520px, 58vh);
+  margin-left: auto;
+  margin-right: auto;
+  object-fit: contain;
+  vertical-align: top;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: #fff;
@@ -530,12 +563,7 @@ footer.report-foot p {
 
 .slide-figures figure {
   margin: 0;
-}
-
-.slide-figures--logos {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  max-width: 28rem;
-  margin-top: 1rem;
+  overflow: hidden;
 }
 
 .slide-figures--two {
@@ -571,15 +599,14 @@ footer.report-foot p {
 .slide-figure-single img {
   display: block;
   margin: 0 auto;
+  width: auto;
   max-width: 100%;
   height: auto;
+  max-height: min(520px, 58vh);
+  object-fit: contain;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: #fff;
-}
-
-.video-wrap--ppt video {
-  max-height: min(80vh, 640px);
 }
 
 .prose-p {
