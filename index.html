@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vektor — Final project submission</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Vektor</h1>
+        <p class="lead">
+          Autonomous mobile robot: visual SLAM mapping, ROS&nbsp;2 Nav2 navigation, multi-camera sensing on NVIDIA Jetson
+          Orin with Arduino Mega base control.
+        </p>
+        <dl class="meta">
+          <dt>Course submission</dt>
+          <dd>Replace with your course number and semester (HTML: this block in <code>index.html</code>).</dd>
+          <dt>Author</dt>
+          <dd>Maheena Booba · <a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a></dd>
+          <dt>Institution</dt>
+          <dd>University of Wisconsin–Madison</dd>
+        </dl>
+      </header>
+
+      <section id="reports" aria-labelledby="reports-heading">
+        <h2 id="reports-heading">Written reports</h2>
+        <div class="card">
+          <p class="note" style="margin-top: 0">
+            Add PDFs under <code>pdfs/</code> as shown below. Filename must match exactly, or edit the paths in this page.
+          </p>
+          <ul class="doc-list">
+            <li>
+              <a href="pdfs/report_proposal.pdf">Proposal <span class="suffix">PDF</span></a>
+            </li>
+            <li>
+              <a href="pdfs/report_midterm.pdf">Midterm report <span class="suffix">PDF</span></a>
+            </li>
+            <li>
+              <a href="pdfs/report_final.pdf">Final report <span class="suffix">PDF</span></a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="overview" aria-labelledby="overview-heading">
+        <h2 id="overview-heading">Project summary</h2>
+        <div class="card">
+          <p style="margin-top: 0">
+            Vektor is a cart-based differential-drive platform for autonomous navigation indoors. Computing runs on Ubuntu
+            22.04 (Jetson). Software uses ROS&nbsp;2 Humble, RTAB-Map SLAM fed by RGB-D and laser-style scans, Nav2 for
+            planning and recovery, DepthAI Luxonis cameras, and fused odometry plus safety monitoring (ultrasonics,
+            cliffs).
+          </p>
+          <p style="margin-bottom: 0">
+            Replace this paragraph with a short abstract tailored for your graders; keep jargon appropriate to your rubric.
+          </p>
+        </div>
+      </section>
+
+      <section id="diagrams" aria-labelledby="diagrams-heading">
+        <h2 id="diagrams-heading">Diagrams &amp; media</h2>
+        <div class="card figure-block">
+          <p style="margin-top: 0" class="note">
+            System schematic from the codebase (<code>flowchart.svg</code>). Drop additional photos under
+            <code>media/</code> and uncomment the gallery block below when you add <code>media/robot.jpg</code> (or rename
+            files accordingly).
+          </p>
+          <figure>
+            <img src="assets/flowchart.svg" alt="Vektor electronics and data wiring diagram (SVG)." width="1200" height="800" loading="lazy" />
+            <figcaption>High-level electronics and interconnect diagram.</figcaption>
+          </figure>
+
+          <!--
+          Uncomment and duplicate <figure> blocks as you add files to media/.
+          Example filenames — change to match your uploads.
+
+          <div class="figure-grid">
+            <figure>
+              <img src="media/robot-photo.jpg" alt="Vektor robot physical platform." loading="lazy" />
+              <figcaption>Platform overview.</figcaption>
+            </figure>
+            <figure>
+              <img src="media/map-rviz.png" alt="Occupancy grid or SLAM visualization." loading="lazy" />
+              <figcaption>Mapping in RViz.</figcaption>
+            </figure>
+          </div>
+          -->
+        </div>
+      </section>
+
+      <section id="demo-video" aria-labelledby="video-heading">
+        <h2 id="video-heading">Demo video</h2>
+        <div class="card">
+          <div class="video-wrap">
+            <video controls preload="metadata" aria-label="Vektor project demo video">
+              <source src="media/demo.mp4" type="video/mp4" />
+              Your browser cannot play embedded video. Download <a href="media/demo.mp4">media/demo.mp4</a>, or upgrade
+              your browser.
+            </video>
+          </div>
+          <p class="note">
+            Place your recording at <code>media/demo.mp4</code> before publishing. GitHub blocks individual files over
+            about 100&nbsp;MB—if your video is larger, host it on YouTube (unlisted) or Google Drive and paste an embed or
+            link (see <code>README.md</code> in this folder).
+          </p>
+          <!--
+          Optional: YouTube embed (replace VIDEO_ID). Remove or keep alongside <video> as needed.
+
+          <div class="video-wrap" style="aspect-ratio: 16/9; height: auto;">
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube.com/embed/VIDEO_ID"
+              title="Vektor demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              style="width: 100%; height: 100%; min-height: 280px; border: 0;"
+            ></iframe>
+          </div>
+          -->
+        </div>
+      </section>
+
+      <footer>
+        <p>
+          Built for GitHub Pages. Repository URL: add your link after you create the GitHub repo. Pages URL:
+          <code>https://&lt;GitHubUsername&gt;.github.io/&lt;repo-name&gt;/</code> — confirm
+          <strong>GitHub username</strong> at
+          <a href="https://github.com/settings/profile">github.com/settings/profile</a> (not your <code>@wisc.edu</code>
+          email).
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
