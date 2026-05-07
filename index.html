@@ -3,289 +3,284 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="CS 766 Spring 2026 — camera-based autonomy for MR patient tables (Vektor)." />
-    <title>MR patient table navigation — CS 766 Spring 2026 · Najib Akram Maheen Aboobacker</title>
+    <meta
+      name="description"
+      content="CS766 Spring 2026 final presentation — Camera-Based Autonomous Navigation for MR Patient Tables (content from CS766_9075788365_Akram_Final_Report.pptx)."
+    />
+    <title>Camera-Based Autonomous Navigation for MR Patient Tables — CS766 Spring 2026</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="wrap">
-      <article class="report">
-        <header class="report-cover">
-          <p class="eyebrow">
-            University of Wisconsin–Madison · CS 766 Computer Vision · Spring 2026 · Student ID&nbsp;9075788365
-          </p>
-          <h1>Camera-based autonomous navigation for MR patient tables</h1>
-          <p class="subtitle">
-            <strong>Vektor</strong> is my phantom differential-drive cart (~300&nbsp;kg-class tables would reuse the algorithms later).
-            Tables are awkward to maneuver; staffing is tight (~16&nbsp;% MR technologist vacancy in survey data cited in my proposal) and ergonomic injury rates are high. A GE-internal lidar prototype already proved autonomy is possible and suggested moving toward cameras. I built toward that suggestion on real hardware with ROS&nbsp;2, RTAB‑Map, and Nav2.
-          </p>
-          <div class="byline">
-            <div>
-              <div class="label">Name</div>
-              <div class="value">Najib Akram Maheen Aboobacker</div>
-            </div>
-            <div>
-              <div class="label">Student ID</div>
-              <div class="value">9075788365</div>
-            </div>
-            <div>
-              <div class="label">Course</div>
-              <div class="value">CS 766 · Spring 2026</div>
-            </div>
-            <div>
-              <div class="label">Email</div>
-              <div class="value"><a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a></div>
-            </div>
-            <div>
-              <div class="label">Mentors (GE HealthCare)</div>
-              <div class="value">Jason Philips · Masanam Mariappan · Jesse Daugherty</div>
-            </div>
-          </div>
-          <p class="caption-muted" style="margin-top: 1rem; margin-bottom: 0">
-            Diagrams Figures&nbsp;1–2 below follow the midterm TikZ diagrams (hardware integration + perception/NAV pipeline), redrawn here as standalone SVG block figures. Figure&nbsp;3 is the repo power/wiring schematic for pin-level detail.
-          </p>
-        </header>
+      <p class="source-note">
+        This page reproduces the on-slide text and media from
+        <span class="nowrap">CS766_9075788365_Akram_Final_Report.pptx</span> only—no additional technical claims.
+      </p>
 
-        <nav class="toc" aria-label="Table of contents">
-          <h2>Contents</h2>
-          <ol>
-            <li><a href="#abstract">Abstract</a></li>
-            <li><a href="#problem">Problem and research question</a></li>
-            <li><a href="#timeline">Changes since proposal / midterm</a></li>
-            <li><a href="#architecture">Hardware integration (Fig.&nbsp;1)</a></li>
-            <li><a href="#perception">Vision stack (Fig.&nbsp;2)</a></li>
-            <li><a href="#runs">Mapping vs Nav2 usage</a></li>
-            <li><a href="#challenges">Debugging war stories</a></li>
-            <li><a href="#evaluation">Evaluation checklist</a></li>
-            <li><a href="#figures">Supplementary schematic (Fig.&nbsp;3)</a></li>
-            <li><a href="#demo">Demonstration video</a></li>
-            <li><a href="#documents">PDF manuscripts</a></li>
-            <li><a href="#references">References</a></li>
-          </ol>
-        </nav>
+      <header class="report-cover slide-section" id="slide-1">
+        <h1>Camera-Based Autonomous Navigation for MR Patient Tables</h1>
+        <p class="title-meta">Najib Akram | 9075788365 | 29 April 2026</p>
+        <p class="title-meta">CS766 Spring 2026</p>
+        <p class="title-meta">Industry Mentors | Masanam Mariappan | Jason Philps</p>
+        <div class="slide-figures slide-figures--logos">
+          <img src="assets/ppt-export/media/image1.png" width="200" height="80" alt="Graphic from presentation slide 1." loading="lazy" />
+          <img src="assets/ppt-export/media/image2.png" width="200" height="80" alt="Graphic from presentation slide 1." loading="lazy" />
+        </div>
+      </header>
 
-        <section id="abstract">
-          <h2>Abstract</h2>
-          <div class="prose card">
-            <p>
-              Hospitals already run autonomous logistic robots that don’t resemble patient tables—the gap is modality and safety culture, not ROS packaging.
-              Lidar prototypes at GE narrowed the autonomy question down to reproducible ROS&nbsp;2 + Nav2 behavior; cameras add RGB so people and carts can hopefully be distinguished later when semantic overlays land in costmaps (SCRFD / YOLO-style heads running on-camera).
-            </p>
-            <p>
-              Proposal scope asked for perimeter cameras so nothing sneaks beside the phantom footprint; Intel RealSense D435i sketches became Luxonis&nbsp;OAK‑D rigs because disparity + neural offload on Myriad X eased USB and GPU contention on the Jetson.
-              Midterm work proved dual cameras streamed at ~15&nbsp;fps stereo without USB collapse after NVMe relocation; motor integration survived a burnt Cytron&nbsp;MDDS30 from a mis-wiring day the write-up refuses to bury.
-              Final integrations add left/right periphery analogous to proposal corner coverage—the same occlusion argument GE mentors signed off early.
-            </p>
-          </div>
-        </section>
+      <nav class="toc slide-toc" aria-label="Slides">
+        <h2 class="toc-heading">Slides</h2>
+        <ol>
+          <li><a href="#slide-1">Title</a></li>
+          <li><a href="#slide-2">Problem</a></li>
+          <li><a href="#slide-3">Why it matters</a></li>
+          <li><a href="#slide-4">Build vs buy</a></li>
+          <li><a href="#slide-5">Hardware</a></li>
+          <li><a href="#slide-6">Architecture</a></li>
+          <li><a href="#slide-7">Perception &amp; mapping</a></li>
+          <li><a href="#slide-8">Navigation stack</a></li>
+          <li><a href="#slide-9">Auto-docking</a></li>
+          <li><a href="#slide-10">Results</a></li>
+          <li><a href="#slide-11">Future work &amp; acknowledgements</a></li>
+          <li><a href="#written-submissions">Written submissions</a></li>
+        </ol>
+      </nav>
 
-        <section id="problem">
-          <h2>Problem and research question</h2>
-          <div class="prose card">
-            <p>
-              A 2‑D lidar slice can’t tell a moving person apart from drywall if geometry overlaps; depth + appearance has a puncher’s chance of encoding “give humans extra clearance”.
-              The counter-risk is brittle visual SLAM in white hallways—you lean on RTAB‑Map knobs, IMU bridging, occasional depth-derived odometry, and honest characterization when lighting wins.
-            </p>
-            <p>
-              <strong>Central question:</strong> Can perimeter RGB‑D autonomy + Nav2 on a phantom cart hit proposal-grade quantitative targets (navigation success, path inefficiency multiples, deliberate obstacle rehearsals, sane mapping drift, latency near 75–100&nbsp;ms on paper versus hardware)?
-              If yes, transferring stack responsibility to heavier magnet-qualified hardware is plausible; if no, failures are enumerated in prose instead of waved away as “deployment detail”.
-            </p>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-2">
+        <h2>The Problem: Transport &amp; Docking</h2>
+        <ul class="slide-bullets">
+          <li>
+            <strong>Massive Workload:</strong> Patient tables weigh 670 lbs (300 kg) unloaded. This contributes to &gt;50% of
+            technologists reporting occupational injuries and a record 16.2% MR tech vacancy rate.
+          </li>
+          <li>
+            <strong>Collision Damage:</strong> While modern e-drives assist with pushing, they still require manual steering.
+            This often results in crashing into door frames and walls, causing equipment stress and patient discomfort.
+          </li>
+          <li>
+            <strong>The Docking Bottleneck:</strong> A single technologist pushing from the rear has severe blind spots,
+            making alignment with the scanner bore a slow, tedious process of micro-adjustments.
+          </li>
+          <li>
+            <strong>The Goal:</strong> Build an autonomous foundation for corridor navigation and precise auto-docking, removing
+            this physical burden.
+          </li>
+        </ul>
+        <div class="slide-figures slide-figures--two">
+          <figure>
+            <img src="assets/ppt-export/media/image3.jpeg" alt="Slide 2 graphic from presentation." loading="lazy" />
+          </figure>
+          <figure>
+            <img src="assets/ppt-export/media/image4.png" alt="Slide 2 graphic from presentation." loading="lazy" />
+          </figure>
+        </div>
+      </section>
 
-        <section id="timeline">
-          <h2>Changes since proposal / midterm</h2>
-          <div class="prose card">
-            <ul class="callout-list">
-              <li><strong>Sensors:</strong> RealSense plan → DepthAI pipelines on OAK‑D stereo heads with camera-local inference.</li>
-              <li>
-                <strong>Camera rollout:</strong> Midterm concentrates on longitudinal front/rear pairs documenting bandwidth and calibration chain issues; codebase launch stories expand to flank/rear depth-to-scan arcs matching four-corner occlusion logic.
-              </li>
-              <li><strong>Storage:</strong> NVMe replaces SD/eMMC choke points so logging + multi-camera IO stop fighting the same bottleneck.</li>
-              <li>
-                <strong>Drive electronics:</strong> Arduino Mega + Cytron MDDS30 dual H-bridge + encoder DC gearmotors; incident report in midterm about a dead driver after 24&nbsp;V hit logic inputs.
-              </li>
-              <li>
-                <strong>Experiments still binding:</strong> ≥20 trials, success rate target &gt;80&nbsp;%, path length ratio, obstacle drills, map sanity, latency audit—same bullet list as proposal but now tied to lab logs instead of intent.
-              </li>
-            </ul>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-3">
+        <h2>Why It Matters (Clinical &amp; Business Impact)</h2>
+        <ul class="slide-bullets">
+          <li>
+            <strong>Operational Efficiency:</strong> As MRI scan times decrease, non-scan tasks (like manually pushing the 670
+            lb table) become the primary bottleneck for throughput.
+          </li>
+          <li>
+            <strong>Greater Patient Focus (“Eyes Up”):</strong> Currently, technologists stare at the floor and wheels to
+            avoid collisions. Autonomy allows them to keep their “eyes up” and focused entirely on patient care and comfort.
+          </li>
+          <li>
+            <strong>Talent Retention:</strong> With a 16.2% vacancy rate, hospitals cannot afford to burn out staff on heavy
+            labor. Automating transport is crucial for workplace satisfaction and reducing the &gt;50% injury rate.
+          </li>
+          <li>
+            <strong>Competitive Edge:</strong> Competitors (like Siemens) are already patenting patient table autonomous
+            navigation. Proving this technology keeps us ahead of the curve.
+          </li>
+        </ul>
+      </section>
 
-        <section id="architecture">
-          <h2>Hardware integration</h2>
-          <div class="prose card">
-            <p>
-              Figure&nbsp;1 copies the midterm hardware story: four OAK placements sketched with lateral units dotted as “planned” while front/rear were live at the midterm snapshot; final software brings peripheral cameras online for coverage matching the original proposal.
-              Jetson ingests USB3 streams, exchanges serial velocity and odometry with the Mega, and the Cytron stage outputs traction power to paired gearmotors feeding encoders back into the MCU loop.
-            </p>
-            <div class="diagram-sheet" role="img" aria-label="Hardware block diagram">
-              <img src="assets/diagram-hardware-integration.svg" width="1000" height="450" alt="Block diagram: 24 V supply, four OAK-D cameras, Jetson, Arduino Mega, Cytron motor driver, DC motors, differential base." loading="lazy" />
-            </div>
-            <p class="caption-muted" style="margin-top: 0.5rem">Figure&nbsp;1. Integration diagram (SVG reinterpretation of midterm TikZ hardware figure).</p>
+      <section class="slide-section card" id="slide-4">
+        <h2>Why Build a Custom MR-Specific Robot? (The “Build vs. Buy” Decision)</h2>
+        <ul class="slide-bullets">
+          <li>
+            <strong>The MR Constraint:</strong> High-field MRI suites are hazardous environments for standard robotics.
+            Strong magnetic fields restrict the use of typical sensors like spinning LiDAR (due to ferrous motors/magnets).
+          </li>
+          <li>
+            <strong>The “Build vs Buy” Reality:</strong> There are no off-the-shelf consumer or warehouse robots designed for
+            this unique constraint and the specific geometry of patient table docking.
+          </li>
+          <li>
+            <strong>The Vektor Approach:</strong> By building our own camera-centric (LiDAR-free) prototype, we maintain
+            complete control over the safety architecture, sensor choices, and software stack required for eventual clinical
+            integration.
+          </li>
+        </ul>
+        <div class="slide-figures slide-figures--two">
+          <figure>
+            <img src="assets/ppt-export/media/image5.jpeg" alt="Slide 4 graphic from presentation." loading="lazy" />
+          </figure>
+          <figure>
+            <img src="assets/ppt-export/media/image6.jpeg" alt="Slide 4 graphic from presentation." loading="lazy" />
+          </figure>
+        </div>
+      </section>
 
-            <h3>Software ↔ firmware boundary</h3>
-            <p>
-              Ubuntu&nbsp;22.04 hosts ROS&nbsp;2 Humble (DepthAI SDK v3, RTAB‑Map, Nav2, RViz). Arduino side handles quadrature timing, joystick reads, ultrasonic guard inputs, PWM out, and sane defaults when supervisory serial drops—all straight from documented midterm scope.
-            </p>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-5">
+        <h2>The Hardware Foundation (Ground-Up Integration)</h2>
+        <dl class="slide-dl">
+          <dt>Compute</dt>
+          <dd>NVIDIA Jetson Orin running Ubuntu 22.04 + ROS 2 Humble</dd>
+          <dt>Perception</dt>
+          <dd>4× Luxonis OAK-D cameras (stereo depth + RGB + IMU on-device)</dd>
+          <dt>Drive Layer</dt>
+          <dd>Arduino Mega + Cytron MDDS30 motor driver + wheel encoders</dd>
+          <dt>Safety</dt>
+          <dd>HC-SR04 ultrasonic array for near-field obstacle detection</dd>
+          <dt>Power</dt>
+          <dd>24V traction battery with regulated DC-DC rails</dd>
+          <dt>Specs</dt>
+          <dd>86cm × 43cm × 89cm chassis, differential drive, 12.7cm wheels</dd>
+        </dl>
+        <div class="slide-figures slide-figures--triple">
+          <figure><img src="assets/ppt-export/media/image7.jpeg" alt="Slide 5 graphic from presentation." loading="lazy" /></figure>
+          <figure><img src="assets/ppt-export/media/image8.jpeg" alt="Slide 5 graphic from presentation." loading="lazy" /></figure>
+          <figure><img src="assets/ppt-export/media/image9.jpeg" alt="Slide 5 graphic from presentation." loading="lazy" /></figure>
+        </div>
+      </section>
 
-        <section id="perception">
-          <h2>Vision stack and autonomy pipeline</h2>
-          <div class="prose card">
-            <p>
-              Figure&nbsp;2 mirrors the TikZ “three lane” storyline: disparity depth feeding projected obstacle layers; RGB nets running on-camera; IMU aiding SLAM; Nav2 absorbing layered costmaps; serial motor chain closing the loop.
-              Legend cues match the dissertation-style figure: solid rectangles for host code you can git-clone today, dashed for Myriad offload, dotted for integrations still described as phased in prose when the screenshot was exported.
-            </p>
-            <div class="diagram-sheet" role="img" aria-label="Perception and navigation pipeline diagram">
-              <img src="assets/diagram-perception-pipeline.svg" width="1040" height="540" alt="Pipeline lanes for stereo depth, RGB neural detection, SLAM fusion, Nav2 planning, Arduino motor output, wheel odometry feedback." loading="lazy" />
-            </div>
-            <p class="caption-muted" style="margin-top: 0.5rem">Figure&nbsp;2. Software pipeline counterpart to midterm computer-vision TikZ artwork.</p>
+      <section class="slide-section card" id="slide-6">
+        <h2>System Architecture (The Data Pipeline)</h2>
+        <ul class="slide-bullets">
+          <li><strong>Perception → Map:</strong> OAK-D cameras feed RTAB-Map for RGB-D SLAM</li>
+          <li><strong>Map → Plan:</strong> Nav2 stack reads the map and plans safe paths</li>
+          <li><strong>Plan → Motion:</strong> Velocity commands flow through Arduino to motors</li>
+          <li><strong>Safety Layer:</strong> Ultrasonics feed a safety monitor that scales velocity near obstacles</li>
+        </ul>
+        <figure class="slide-figure-single">
+          <img src="assets/ppt-export/media/image10.png" alt="Slide 6 system architecture graphic from presentation." loading="lazy" />
+        </figure>
+      </section>
 
-            <h3>Stereo specifics worth naming</h3>
-            <p>
-              Extended disparity buys corridor reach; sub-pixel disparity tightens doorway clearances; depth frames clip around 10&nbsp;m visually.
-              Scripts like <code>dual_stereo_depth.py</code> echo midterm narration—paired cameras, disparity confidence checks, MJPEG grabs for graders who dislike reading bagfiles.
-            </p>
-            <h3>Neural overlays</h3>
-            <p>
-              Spatial detection fuses SCRFD/YOLO families with disparity for XYZ tags in millimeters while keeping CUDA idle for slam graph work—explicit midterm justification for swapping away from laptops without monster GPUs tethered overhead.
-            </p>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-7">
+        <h2>Perception &amp; Mapping (RGB-D SLAM)</h2>
+        <ul class="slide-bullets">
+          <li><strong>VPU Offloading:</strong> Depth computed on-camera, preserving Jetson CPU</li>
+          <li><strong>Scan Merger:</strong> Custom node combines 4 depth cameras into unified 360° scan</li>
+          <li><strong>RTAB-Map:</strong> Visual SLAM using RGB + Depth for loop closure in repetitive corridors</li>
+          <li><strong>Output:</strong> 2D occupancy grid for Nav2 costmaps</li>
+        </ul>
+        <figure class="slide-figure-single">
+          <img src="assets/ppt-export/media/image11.png" alt="Slide 7 perception and mapping graphic from presentation." loading="lazy" />
+        </figure>
+      </section>
 
-        <section id="runs">
-          <h2>Mapping vs Nav2 usage</h2>
-          <div class="prose card">
-            <p>
-              SLAM-heavy launch configs log maps via technologist-ish manual driving; navigation configs swap planners once grids exist. RViz clicks pose goals the same way class demos advertise; joystick topics preempt autonomy without restarting launch graphs.
-              Dock / alignment experiments exist in tree for repeatability when charging infrastructure appears—course rubric cared more about repeatable navigation evidence than docking polish.
-            </p>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-8">
+        <h2>Navigation Stack</h2>
+        <ul class="slide-bullets">
+          <li><strong>Path Planning:</strong> NavfnPlanner uses A* algorithm on the global costmap</li>
+          <li><strong>Path Following:</strong> RegulatedPurePursuit controller tracks the planned path</li>
+          <li>
+            <strong>Costmap Layers:</strong> Static (saved map) + Obstacle (live scans) + Inflation (safety buffer)
+          </li>
+          <li><strong>Safety Monitor:</strong> Ultrasonics scale velocity when obstacles are within 50cm</li>
+        </ul>
+        <figure class="slide-figure-single">
+          <img src="assets/ppt-export/media/image12.png" alt="Slide 8 navigation stack graphic from presentation." loading="lazy" />
+        </figure>
+      </section>
 
-        <section id="challenges">
-          <h2>Debugging war stories</h2>
-          <div class="prose card">
-            <ul class="callout-list">
-              <li>
-                NVMe bootloader archaeology on Jetson Orin Nano SKU-specific notes—tedious but mandatory once pipelines needed simultaneous capture + ROS logging.
-              </li>
-              <li>
-                OAK devices boot as USB2 until firmware upload finishes; <code>verify_cameras.py</code> exists because I initially accused cables instead of reading the manual sequence.
-              </li>
-              <li>
-                Motor driver smoke from mis-routed traction vs logic—expensive lesson that delayed closed-loop runs about a week while perception scripts kept moving.
-              </li>
-              <li>
-                Hallway visual poverty means IMU-assisted bridging inside RTAB-Map cannot be optional hand-waving; depth-only odometry remains a documented escape hatch if photometry fails.
-              </li>
-            </ul>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-9">
+        <h2>Auto-Docking System</h2>
+        <ul class="slide-bullets">
+          <li>
+            <strong>Visual Docking:</strong> AprilTag (tag36h11) detected by front OAK-D camera using pupil-apriltags library
+          </li>
+          <li>
+            <strong>Voice Control:</strong> Offline speech recognition (Vosk) + text-to-speech (Piper) via Jabra mic/speaker
+          </li>
+          <li>
+            <strong>Approach Algorithm:</strong> Speed scales from 0.10 m/s (far) → 0.02 m/s (close), stops when ultrasonic
+            &lt; 10cm AND tag centered within 3cm
+          </li>
+          <li>
+            <strong>Commands:</strong> “Hello” wakes robot → “Dock” or “Go home” triggers docking → “Undock” backs away
+          </li>
+        </ul>
+        <figure class="slide-figure-single">
+          <img src="assets/ppt-export/media/image13.png" alt="Slide 9 auto-docking graphic from presentation." loading="lazy" />
+        </figure>
+      </section>
 
-        <section id="evaluation">
-          <h2>Evaluation checklist</h2>
-          <div class="prose card">
-            <ul class="callout-list">
-              <li><strong>Success vs abort:</strong> Did the vehicle reach goal state without human rescue or unplanned e-stop?</li>
-              <li><strong>Path inflation factor:</strong> executed length ÷ plausible shortest corridor-friendly polyline.</li>
-              <li><strong>Obstacle battery:</strong> static furniture + dynamic actors crossing path test costmap latency.</li>
-              <li><strong>Mapper drift audit:</strong> compare long-loop SLAM layout against tape-measured baseline when available.</li>
-              <li><strong>Sense-to-act latency:</strong> timestamp plumbing from depth callback to Twist publish—shooting for sub-100&nbsp;ms p95 when thermal headroom permits.</li>
-            </ul>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-10">
+        <h2>Results in Action</h2>
+        <ul class="slide-bullets">
+          <li><strong>Perception Verified:</strong> Depth cameras correctly project obstacles into local occupancy grid</li>
+          <li><strong>SLAM Working:</strong> RTAB-Map builds persistent 2D map of cluttered environments</li>
+          <li><strong>Full Autonomy:</strong> Nav2 plans and executes collision-free paths</li>
+          <li><strong>Auto-Docking:</strong> Voice integrated, sub-cm precision alignment achieved</li>
+        </ul>
+        <div class="slide-figures slide-figures--quad">
+          <figure><img src="assets/ppt-export/media/image14.png" alt="Slide 10 result graphic from presentation." loading="lazy" /></figure>
+          <figure><img src="assets/ppt-export/media/image15.png" alt="Slide 10 result graphic from presentation." loading="lazy" /></figure>
+          <figure><img src="assets/ppt-export/media/image16.png" alt="Slide 10 result graphic from presentation." loading="lazy" /></figure>
+          <figure><img src="assets/ppt-export/media/image17.png" alt="Slide 10 result graphic from presentation." loading="lazy" /></figure>
+        </div>
+        <div class="video-wrap video-wrap--ppt">
+          <video controls preload="metadata" aria-label="Video embedded in slide 10 of the final presentation.">
+            <source src="assets/ppt-export/media/media1.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <p class="caption-muted">On slide 10: “click to play video. Increase volume”</p>
+      </section>
 
-        <section id="figures">
-          <h2>Supplementary schematic (repository wiring diagram)</h2>
-          <div class="card figure-card">
-            <p class="prose" style="margin-top: 0">
-              Figure&nbsp;3 predates TikZ refactor—pin-level interconnect from hardware bring-up notebooks. Useful for grounding claims about rail voltages, not redundant with Figures&nbsp;1–2.
-            </p>
-            <div class="diagram-sheet">
-              <img
-                src="assets/flowchart.svg"
-                alt="Detailed power and signal interconnect from repository documentation."
-                width="1200"
-                height="800"
-                loading="lazy"
-              />
-            </div>
-            <figcaption>Figure&nbsp;3. Legacy repo schematic (electronics detail).</figcaption>
-          </div>
-        </section>
+      <section class="slide-section card" id="slide-11">
+        <h2>Future Work &amp; Conclusion</h2>
+        <ul class="slide-bullets">
+          <li><strong>Advanced Semantics:</strong> On-camera neural inference to detect clinical staff</li>
+          <li><strong>Dynamic Safety Margins:</strong> Adjust behavior based on detected humans</li>
+          <li><strong>Clinical Integration:</strong> Transfer to actual MR patient table hardware</li>
+        </ul>
 
-        <section id="demo">
-          <h2>Demonstration video</h2>
-          <div class="card">
-            <p class="prose" style="margin-top: 0">
-              Packaged excerpt at <code>media/demo.mp4</code> (hosted here if Git size allows); otherwise graders get an unlisted link through the LMS comment field.
-            </p>
-            <div class="video-wrap">
-              <video controls preload="metadata" aria-label="Demonstration excerpt">
-                <source src="media/demo.mp4" type="video/mp4" />
-                Download the demo clip from the repository <code>media</code> directory if autoplay fails.
-              </video>
-            </div>
-          </div>
-        </section>
+        <h3 class="slide-subheading">Acknowledgements</h3>
+        <dl class="slide-dl slide-dl--tight">
+          <dt>Leadership &amp; Support</dt>
+          <dd>Masanam Mariappan, Jason Philps, Chinmoy Goswami, Kavitha Nair &amp; GE Healthcare.</dd>
+          <dt>Academic Guide</dt>
+          <dd>Dr. Mohit Gupta (for approving and guiding this project).</dd>
+          <dt>Project Genesis</dt>
+          <dd>Jason Philps, Nicolas Escobar, Andrew Moulton, &amp; Mark Schmieding (Smart Navigation Assist).</dd>
+          <dt>Engineering &amp; Build</dt>
+          <dd>Jesse Daugherty (Mechanical), Mike Edwards (Electronics), Dave C, Rick and Dana (Bay).</dd>
+        </dl>
+        <div class="slide-figures slide-figures--logos">
+          <img src="assets/ppt-export/media/image1.png" width="180" height="72" alt="Closing slide graphic from presentation." loading="lazy" />
+          <img src="assets/ppt-export/media/image2.png" width="180" height="72" alt="Closing slide graphic from presentation." loading="lazy" />
+        </div>
+      </section>
 
-        <section id="documents">
-          <h2>PDF manuscripts</h2>
-          <div class="card prose" style="padding-top: 0.9rem">
-            <p style="margin-top: 0">
-              LaTeX sources in repo root: <code class="nowrap">mr_patient_table_proposal.tex</code>, <code class="nowrap">mr_patient_table_midterm.tex</code>.
-              Rendered uploads:
-            </p>
-            <ul class="doc-list">
-              <li>
-                <a href="pdfs/report_proposal.pdf">Proposal</a>
-                <span class="doc-meta">Original scope · budget sketch · phased milestones tied to GE context.</span>
-              </li>
-              <li>
-                <a href="pdfs/report_midterm.pdf">Midterm</a>
-                <span class="doc-meta">TikZ Figures&nbsp;1–2 sources · empirical depth/inference benchmarks · setbacks.</span>
-              </li>
-              <li>
-                <a href="pdfs/report_final.pdf">Final report</a>
-                <span class="doc-meta">Primary graded PDF narrative.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
+      <section class="slide-section card" id="written-submissions">
+        <h2>Written submissions</h2>
+        <p class="prose-p">
+          PDFs compiled from coursework LaTeX (not duplicated here as narrative):
+          <a href="pdfs/report_proposal.pdf">proposal</a>, <a href="pdfs/report_midterm.pdf">midterm</a>,
+          <a href="pdfs/report_final.pdf">final</a>. Sources in repo root: <code class="nowrap">mr_patient_table_proposal.tex</code>,
+          <code class="nowrap">mr_patient_table_midterm.tex</code>.
+        </p>
+      </section>
 
-        <section id="references">
-          <h2>References</h2>
-          <div class="prose card">
-            <ul class="bib-list">
-              <li><strong>AMN Healthcare survey (2022)</strong> — staffing pressure cited numerically.</li>
-              <li><strong>Macavei &amp; Clark (2020)</strong>, technologist ergonomics baseline.</li>
-              <li><strong>Escobar / Moulton / Schmieding GE poster (2023)</strong> — prior lidar platform + recommendation trajectory.</li>
-              <li><strong>Labbé &amp; Michaud (2019)</strong>, RTAB-Map methodological backbone.</li>
-              <li><strong>Macenski et&nbsp;al. (2023)</strong>, Nav2 architecture reference.</li>
-              <li><strong>Luxonis DepthAI</strong>: <a href="https://docs.luxonis.com/">docs.luxonis.com</a>.</li>
-            </ul>
-            <p style="margin-top: 1rem">
-              Hosted site repo: <a href="https://github.com/uwnajibakram/vektor-final">github.com/uwnajibakram/vektor-final</a> · Pages:
-              <a href="https://uwnajibakram.github.io/vektor-final/">live view</a>.
-            </p>
-          </div>
-        </section>
-
-        <footer class="report-foot">
-          <p>
-            Najib Akram Maheen Aboobacker (9075788365) — UW–Madison CS 766 Spring 2026. Written in plain voice alongside the formal PDF manuscripts.
-          </p>
-        </footer>
-      </article>
+      <footer class="report-foot">
+        <p>
+          Site content mirrored from Najib Akram’s CS766 Spring 2026 final PowerPoint —
+          <span class="nowrap">9075788365</span> ·
+          <a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a>
+        </p>
+      </footer>
     </div>
   </body>
 </html>
