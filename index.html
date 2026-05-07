@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vektor — Final project submission</title>
+    <meta name="description" content="Vektor: autonomous indoor mobile robot with visual SLAM and ROS 2 Nav2 — final project report." />
+    <title>Vektor — Final project report</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,130 +15,261 @@
   </head>
   <body>
     <div class="wrap">
-      <header>
-        <h1>Vektor</h1>
-        <p class="lead">
-          Autonomous mobile robot: visual SLAM mapping, ROS&nbsp;2 Nav2 navigation, multi-camera sensing on NVIDIA Jetson
-          Orin with Arduino Mega base control.
-        </p>
-        <dl class="meta">
-          <dt>Course submission</dt>
-          <dd>Replace with your course number and semester (HTML: this block in <code>index.html</code>).</dd>
-          <dt>Author</dt>
-          <dd>Maheena Booba · <a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a></dd>
-          <dt>Institution</dt>
-          <dd>University of Wisconsin–Madison</dd>
-        </dl>
-      </header>
-
-      <section id="reports" aria-labelledby="reports-heading">
-        <h2 id="reports-heading">Written reports</h2>
-        <div class="card">
-          <p class="note" style="margin-top: 0">
-            Add PDFs under <code>pdfs/</code> as shown below. Filename must match exactly, or edit the paths in this page.
+      <article class="report">
+        <header class="report-cover">
+          <p class="eyebrow">Final project report · University of Wisconsin–Madison · Spring 2026</p>
+          <h1>Vektor</h1>
+          <p class="subtitle">
+            An autonomous, cart-scale mobile robot for <strong>indoor mapping and navigation</strong> using visual SLAM,
+            multi-camera depth, and the ROS&nbsp;2 Nav2 stack—implemented on NVIDIA Jetson Orin with an Arduino Mega bridge
+            for low-level drive, sensing, and manual override.
           </p>
-          <ul class="doc-list">
-            <li>
-              <a href="pdfs/report_proposal.pdf">Proposal <span class="suffix">PDF</span></a>
-            </li>
-            <li>
-              <a href="pdfs/report_midterm.pdf">Midterm report <span class="suffix">PDF</span></a>
-            </li>
-            <li>
-              <a href="pdfs/report_final.pdf">Final report <span class="suffix">PDF</span></a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <div class="byline">
+            <div>
+              <div class="label">Author</div>
+              <div class="value">
+                Maheena Booba · <a href="mailto:maheenabooba@wisc.edu">maheenabooba@wisc.edu</a>
+              </div>
+            </div>
+            <div>
+              <div class="label">Affiliation</div>
+              <div class="value">College of Engineering · University of Wisconsin–Madison</div>
+            </div>
+          </div>
+        </header>
 
-      <section id="overview" aria-labelledby="overview-heading">
-        <h2 id="overview-heading">Project summary</h2>
-        <div class="card">
-          <p style="margin-top: 0">
-            Vektor is a cart-based differential-drive platform for autonomous navigation indoors. Computing runs on Ubuntu
-            22.04 (Jetson). Software uses ROS&nbsp;2 Humble, RTAB-Map SLAM fed by RGB-D and laser-style scans, Nav2 for
-            planning and recovery, DepthAI Luxonis cameras, and fused odometry plus safety monitoring (ultrasonics,
-            cliffs).
-          </p>
-          <p style="margin-bottom: 0">
-            Replace this paragraph with a short abstract tailored for your graders; keep jargon appropriate to your rubric.
-          </p>
-        </div>
-      </section>
+        <nav class="toc" aria-label="Table of contents">
+          <h2>Contents</h2>
+          <ol>
+            <li><a href="#abstract">Abstract</a></li>
+            <li><a href="#introduction">Introduction and objectives</a></li>
+            <li><a href="#architecture">System architecture</a></li>
+            <li><a href="#operation">Mapping, localization, and autonomous navigation</a></li>
+            <li><a href="#platform">Platform summary</a></li>
+            <li><a href="#figures">Figures</a></li>
+            <li><a href="#demonstration">Demonstration</a></li>
+            <li><a href="#documents">Formal submissions (PDF)</a></li>
+            <li><a href="#references">References and materials</a></li>
+          </ol>
+        </nav>
 
-      <section id="diagrams" aria-labelledby="diagrams-heading">
-        <h2 id="diagrams-heading">Diagrams &amp; media</h2>
-        <div class="card figure-block">
-          <p style="margin-top: 0" class="note">
-            System schematic from the codebase (<code>flowchart.svg</code>). Drop additional photos under
-            <code>media/</code> and uncomment the gallery block below when you add <code>media/robot.jpg</code> (or rename
-            files accordingly).
-          </p>
-          <figure>
-            <img src="assets/flowchart.svg" alt="Vektor electronics and data wiring diagram (SVG)." width="1200" height="800" loading="lazy" />
-            <figcaption>High-level electronics and interconnect diagram.</figcaption>
-          </figure>
+        <section id="abstract" aria-labelledby="abstract-heading">
+          <h2 id="abstract-heading">Abstract</h2>
+          <div class="prose card">
+            <p>
+              Vektor targets reliable autonomous operation in typical indoor workspaces—corridors, labs, and open office
+              areas—where a wheeled cart must construct a usable map online and thereafter plan and execute collision-free
+              motion to goals. The system couples <strong>Luxonis OAK-D</strong> stereo RGB-D sensing in four orientations,
+              converting depth cues into rangefinder-style observations suitable for occupancy mapping. On the computation
+              side, <strong>ROS&nbsp;2 Humble</strong> on <strong>Ubuntu 22.04</strong>
+              integrates <strong>RTAB-Map</strong> visual SLAM and <strong>Nav2</strong> for global and local navigation,
+              layered costmaps, and recovery behaviors while wheel odometry from encoders—and optional fusion—anchors short
+              horizon motion between visual updates.
+            </p>
+            <p>
+              An <strong>Arduino Mega</strong> handles time-critical interfaces: PWM actuation for the differential
+              drivetrain, quadrature decoding, ultrasonic proximity on the leading corners for guard-rail prompting, joystick
+              input for supervised teleop, and a serial bridge to ROS nodes on the Jetson. The result is a complete
+              autonomy stack from sensors to actuator commands that can map a new environment during an exploration phase
+              and transition to repeatable goal-to-goal missions with RViz-assisted goal setting and monitoring.
+            </p>
+          </div>
+        </section>
 
-          <!--
-          Uncomment and duplicate <figure> blocks as you add files to media/.
-          Example filenames — change to match your uploads.
+        <section id="introduction" aria-labelledby="intro-heading">
+          <h2 id="intro-heading">Introduction and objectives</h2>
+          <div class="prose card">
+            <p>
+              Indoor service and logistics prototypes increasingly rely on mobile bases that localize in previously unknown
+              or partially modeled buildings. Practical systems must unify perception, estimation, motion planning, and safe
+              actuation—and stay debuggable across field deployment. This work presents <strong>Vektor</strong>, a
+              full-stack robot built around commodity depth cameras and an open robotics middleware, with emphasis on modular
+              bring-up paths for mapping versus navigation missions.
+            </p>
+            <p>The principal goals pursued in Vektor are:</p>
+            <ul class="callout-list">
+              <li>
+                Maintain accurate environmental models using <strong>RGB-D aided SLAM</strong> augmented by synthesized
+                range observations from peripheral cameras—improving completeness around the cart silhouette.
+              </li>
+              <li>
+                Field a production-grade navigation stack (<strong>Nav2</strong>) with standard costmaps, planners, and
+                controllers suitable for differential platforms.
+              </li>
+              <li>
+                Preserve <strong>human-in-the-loop operability</strong> through joystick teleoperation, serially mediated
+                safety inputs, and clear separation between low-level motor control and high-level autonomy.
+              </li>
+            </ul>
+          </div>
+        </section>
 
-          <div class="figure-grid">
+        <section id="architecture" aria-labelledby="arch-heading">
+          <h2 id="arch-heading">System architecture</h2>
+
+          <div class="card prose">
+            <h3>Hardware</h3>
+            <p>
+              Perception and autonomy execute on an <strong>NVIDIA Jetson Orin</strong>, while actuation and raw encoder
+              streams terminate on an <strong>Arduino Mega</strong>. Four <strong>Luxonis OAK-D</strong> RGB-D sensors provide
+              a forward primary stream for mapping and ancillary side/rear coverage owned by downstream nodes that reduce
+              depth to planar scans. Ultrasonic rangefinders on the front quarters supply inexpensive near-field alerting
+              complementary to the depth-derived obstacle signal. Mechanical packaging follows a rectangular cart (~86&nbsp;×&nbsp;43&nbsp;×&nbsp;89&nbsp;cm) with differential drive centrally located wheel pairs and caster support at the longitudinal centerline front and rear, yielding predictable turning poles for planar navigation models.
+            </p>
+
+            <h3>Software</h3>
+            <p>
+              The software stack aligns with ROS&nbsp;2 community practice: parameterized launch graphs switch between slam
+              test and navigation configurations; <strong>RTAB-Map</strong> ingests calibrated camera topics and synthesized
+              laser scans; Nav2 subscribes to the map and odometry frames published by state estimation. DepthAI SDK v3
+              interfaces control camera exposure and synchronizes depth with color where required. Visualization and operator
+              supervision use <strong>RViz2</strong>; bagging and offline replay support regression of perception and control
+              changes without repeated hardware runs.
+            </p>
+          </div>
+        </section>
+
+        <section id="operation" aria-labelledby="op-heading">
+          <h2 id="op-heading">Mapping, localization, and autonomous navigation</h2>
+          <div class="prose card">
+            <p>
+              <strong>Mapping mode</strong> launches the robot state publisher, base controller, camera publishers, depth
+              scan synthesis, and RTAB-Map. As the platform is driven—manually or under scripted exploration—RGB-D keyframes
+              and scan constraints populate a consistent occupancy representation suitable for downstream planning exports.
+            </p>
+            <p>
+              <strong>Navigation mode</strong> reuses the fused odometry backbone and swaps in Nav2 planners, controller
+              servers, and behavior recovery plugins. Static and inflation layers ingest the SLAM-maintained occupancy grid;
+              local footprints reflect the cart geometry tuned in parameter files controlling footprint padding and obstacle
+              inflation radii proportional to perceptual latency.
+            </p>
+            <p>
+              Transitions across modes prioritize repeatable topic naming and calibrated transforms so localization continuity
+              is preserved wherever possible; failure recovery leverages Nav2-assisted behaviors (e.g., rotate in place,
+              backup) guarded by ultrasonic and cliff logic implemented at the microcontroller edge when enabled.
+            </p>
+          </div>
+        </section>
+
+        <section id="platform" aria-labelledby="platform-heading">
+          <h2 id="platform-heading">Platform summary</h2>
+          <div class="card">
+            <dl class="spec-grid">
+              <div>
+                <dt>Compute</dt>
+                <dd>NVIDIA Jetson Orin (Ubuntu&nbsp;22.04)</dd>
+              </div>
+              <div>
+                <dt>MCU / I/O bridge</dt>
+                <dd>Arduino Mega (PWM, encoders, ultrasonics, joystick)</dd>
+              </div>
+              <div>
+                <dt>Vision</dt>
+                <dd>Four Luxonis OAK-D (RGB + depth)</dd>
+              </div>
+              <div>
+                <dt>Middleware &amp; SLAM</dt>
+                <dd>ROS&nbsp;2 Humble · RTAB-Map · DepthAI&nbsp;SDK&nbsp;v3</dd>
+              </div>
+              <div>
+                <dt>Navigation</dt>
+                <dd>Nav2 stack (costmaps · planner · controller · recovery)</dd>
+              </div>
+              <div>
+                <dt>Drive kinematics</dt>
+                <dd>Differential · wheelbase ~55.4&nbsp;cm · wheel Ø ~12.7&nbsp;cm</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section id="figures" aria-labelledby="figures-heading">
+          <h2 id="figures-heading">Figures</h2>
+          <div class="card figure-card">
+            <p class="prose" style="margin-top: 0">
+              Figure&nbsp;1 summarizes major power, data, and motion interfaces between Jetson-hosted ROS nodes,
+              microcontroller-driven actuation and encoders, and the multi-camera perceptual periphery serving SLAM inputs.
+              Supplementary photographs or RViz screen captures accompany the archival media packaged with this manuscript
+              when provided.
+            </p>
             <figure>
-              <img src="media/robot-photo.jpg" alt="Vektor robot physical platform." loading="lazy" />
-              <figcaption>Platform overview.</figcaption>
+              <img
+                src="assets/flowchart.svg"
+                alt="Figure 1. System interconnect diagram linking Jetson, Arduino Mega, drive motors encoders joystick and ultrasonics, and front plus peripheral OAK depth cameras feeding ROS nodes."
+                width="1200"
+                height="800"
+                loading="lazy"
+              />
+              <figcaption>
+                Figure&nbsp;1. High-level interconnect of compute, microcontroller I/O, drive, and sensing subsystems forming
+                the Vektor autonomy pipeline.
+              </figcaption>
             </figure>
-            <figure>
-              <img src="media/map-rviz.png" alt="Occupancy grid or SLAM visualization." loading="lazy" />
-              <figcaption>Mapping in RViz.</figcaption>
-            </figure>
           </div>
-          -->
-        </div>
-      </section>
+        </section>
 
-      <section id="demo-video" aria-labelledby="video-heading">
-        <h2 id="video-heading">Demo video</h2>
-        <div class="card">
-          <div class="video-wrap">
-            <video controls preload="metadata" aria-label="Vektor project demo video">
-              <source src="media/demo.mp4" type="video/mp4" />
-              Your browser cannot play embedded video. Download <a href="media/demo.mp4">media/demo.mp4</a>, or upgrade
-              your browser.
-            </video>
+        <section id="demonstration" aria-labelledby="demo-heading">
+          <h2 id="demo-heading">Demonstration</h2>
+          <div class="card">
+            <p class="prose" style="margin-top: 0">
+              The excerpt below summarizes a representative autonomy session—typically including map capture, localization
+              continuity checks, autonomous navigation trials, and operator recovery events where applicable.
+            </p>
+            <div class="video-wrap">
+              <video controls preload="metadata" aria-label="Vektor autonomy demonstration excerpt">
+                <source src="media/demo.mp4" type="video/mp4" />
+                If playback is unavailable here, retrieve the excerpt from this site’s packaged media artifacts.
+              </video>
+            </div>
+            <p class="caption-muted">
+              Video excerpt accompanies this manuscript via the archived demo media asset published with these pages.
+            </p>
           </div>
-          <p class="note">
-            Place your recording at <code>media/demo.mp4</code> before publishing. GitHub blocks individual files over
-            about 100&nbsp;MB—if your video is larger, host it on YouTube (unlisted) or Google Drive and paste an embed or
-            link (see <code>README.md</code> in this folder).
-          </p>
-          <!--
-          Optional: YouTube embed (replace VIDEO_ID). Remove or keep alongside <video> as needed.
+        </section>
 
-          <div class="video-wrap" style="aspect-ratio: 16/9; height: auto;">
-            <iframe
-              width="560"
-              height="315"
-              src="https://www.youtube.com/embed/VIDEO_ID"
-              title="Vektor demo"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              style="width: 100%; height: 100%; min-height: 280px; border: 0;"
-            ></iframe>
+        <section id="documents" aria-labelledby="docs-heading">
+          <h2 id="docs-heading">Formal submissions (PDF)</h2>
+          <div class="card prose" style="padding-top: 0.9rem">
+            <p style="margin-top: 0; margin-bottom: 1rem">
+              Archival milestones for this effort are consolidated as PDFs—the following entries download the authored
+              proposal, interim midterm synthesis, and the comprehensive final manuscript with evaluation and concluding
+              analysis.
+            </p>
+            <ul class="doc-list">
+              <li>
+                <a href="pdfs/report_proposal.pdf">Project proposal</a>
+                <span class="doc-meta">Problem framing, requirements, and initial technical approach.</span>
+              </li>
+              <li>
+                <a href="pdfs/report_midterm.pdf">Midterm report</a>
+                <span class="doc-meta">Progress against milestones, integration risk, and revised schedule.</span>
+              </li>
+              <li>
+                <a href="pdfs/report_final.pdf">Final report</a>
+                <span class="doc-meta">Complete design narrative, experiments, results, and lessons learned.</span>
+              </li>
+            </ul>
           </div>
-          -->
-        </div>
-      </section>
+        </section>
 
-      <footer>
-        <p>
-          Built for GitHub Pages. Repository URL: add your link after you create the GitHub repo. Pages URL:
-          <code>https://&lt;GitHubUsername&gt;.github.io/&lt;repo-name&gt;/</code> — confirm
-          <strong>GitHub username</strong> at
-          <a href="https://github.com/settings/profile">github.com/settings/profile</a> (not your <code>@wisc.edu</code>
-          email).
-        </p>
-      </footer>
+        <section id="references" aria-labelledby="ref-heading">
+          <h2 id="ref-heading">References and materials</h2>
+          <div class="prose card">
+            <p>
+              Key open-source components include the Robot Operating System (ROS&nbsp;2) ecosystem, Introlab RTAB-Map,
+              Open Navigation’s Nav2, and Luxonis DepthAI camera firmware and SDK tooling. Specifications for cart geometry,
+              topic schemas, operational launch sequencing, and extended troubleshooting narratives live in companion technical
+              documentation maintained with the Vektor software repository alongside this static report site.
+            </p>
+            <p>This report site repository: <a href="https://github.com/uwnajibakram/vektor-final">github.com/uwnajibakram/vektor-final</a>.</p>
+            <p>Public page: <a href="https://uwnajibakram.github.io/vektor-final/">uwnajibakram.github.io/vektor-final</a>.</p>
+          </div>
+        </section>
+
+        <footer class="report-foot">
+          <p>© 2026 Maheena Booba · University of Wisconsin–Madison. All project media and text prepared for instructional review unless otherwise credited.</p>
+        </footer>
+      </article>
     </div>
   </body>
 </html>
